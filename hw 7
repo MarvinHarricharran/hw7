@@ -1,0 +1,136 @@
+setwd("C:/Users/marvi/Downloads/acs_couples")
+load("ACS_2021_couples.Rdata")
+
+library(ggplot2)
+library(tidyverse)
+library(haven)
+library(codebookr)
+
+
+#want to comapre the differnce in the income wage and the head income wage amoung different sex. 
+acs2021_couples$age_diff <- acs2021_couples$INCWAGE - acs2021_couples$h_incwage
+
+
+study_codebook <- codebook(acs2021_couples)
+
+summary(acs2021_couples)
+
+summary(acs2021_couples$age_diff[(acs2021_couples$SEX == "Female")&(acs2021_couples$h_incwage)])
+summary(acs2021_couples$age_diff[(acs2021_couples$SEX == "Male")&(acs2021_couples$h_incwage)])
+
+#compare the gender with the education to see which gender has the higher education 
+
+
+acs2021_couples$educ_numeric <- fct_recode(acs2021_couples$EDUC,
+                                           "0" = "N/A or no schooling",
+                                           "2" = "Nursery school to grade 4",
+                                           "6.5" = "Grade 5, 6, 7, or 8",
+                                           "9" = "Grade 9",
+                                           "10" = "Grade 10",
+                                           "11" = "Grade 11",
+                                           "12" = "Grade 12",
+                                           "13" = "1 year of college",
+                                           "14" = "2 years of college",
+                                           "15" = "3 years of college",
+                                           "16" = "4 years of college",
+                                           "17" = "5+ years of college")
+
+acs2021_couples$educ_numeric <- as.numeric(levels(acs2021_couples$educ_numeric))[acs2021_couples$educ_numeric]
+
+acs2021_couples$h_educ_numeric <- fct_recode(acs2021_couples$h_educ,
+                                             "0" = "N/A or no schooling",
+                                             "2" = "Nursery school to grade 4",
+                                             "6.5" = "Grade 5, 6, 7, or 8",
+                                             "9" = "Grade 9",
+                                             "10" = "Grade 10",
+                                             "11" = "Grade 11",
+                                             "12" = "Grade 12",
+                                             "13" = "1 year of college",
+                                             "14" = "2 years of college",
+                                             "15" = "3 years of college",
+                                             "16" = "4 years of college",
+                                             "17" = "5+ years of college")
+
+acs2021_couples$h_educ_numeric <- as.numeric(levels(acs2021_couples$h_educ_numeric))[acs2021_couples$h_educ_numeric]
+
+acs2021_couples$educ_diff <- acs2021_couples$educ_numeric - acs2021_couples$h_educ_numeric
+
+
+acs_subgroup <- acs2021_couples %>% filter((AGE >= 25) & (AGE <= 55) & 
+                                             (LABFORCE == 2) & (WKSWORK2 > 4) & (UHRSWORK >= 35) )
+
+
+
+
+# Set up working directory and load data
+setwd("C:/Users/marvi/Downloads/acs_couples")
+load("ACS_2021_couples.Rdata")
+
+library(ggplot2)
+library(tidyverse)
+library(haven)
+library(codebookr)
+
+# Calculate income difference (partner income - head income) and rename it for clarity
+acs2021_couples$income_diff <- acs2021_couples$INCWAGE - acs2021_couples$h_incwage
+
+# Summary statistics for income differences by sex
+summary(acs2021_couples$income_diff[acs2021_couples$SEX == "Female"])
+summary(acs2021_couples$income_diff[acs2021_couples$SEX == "Male"])
+
+# Check summary statistics to understand the distribution of the income difference
+# (Consider visualizations for deeper insights, e.g., boxplots by gender)
+ggplot(acs2021_couples, aes(x = SEX, y = income_diff)) +
+  geom_boxplot() +
+  labs(title = "Income Difference by Sex", x = "Sex", y = "Income Difference (Partner - Head)")
+
+# Create numeric education levels for both partner and head
+acs2021_couples$educ_numeric <- fct_recode(acs2021_couples$EDUC,
+                                           "0" = "N/A or no schooling",
+                                           "2" = "Nursery school to grade 4",
+                                           "6.5" = "Grade 5, 6, 7, or 8",
+                                           "9" = "Grade 9",
+                                           "10" = "Grade 10",
+                                           "11" = "Grade 11",
+                                           "12" = "Grade 12",
+                                           "13" = "1 year of college",
+                                           "14" = "2 years of college",
+                                           "15" = "3 years of college",
+                                           "16" = "4 years of college",
+                                           "17" = "5+ years of college") %>%
+  as.numeric()
+
+acs2021_couples$h_educ_numeric <- fct_recode(acs2021_couples$h_educ,
+                                             "0" = "N/A or no schooling",
+                                             "2" = "Nursery school to grade 4",
+                                             "6.5" = "Grade 5, 6, 7, or 8",
+                                             "9" = "Grade 9",
+                                             "10" = "Grade 10",
+                                             "11" = "Grade 11",
+                                             "12" = "Grade 12",
+                                             "13" = "1 year of college",
+                                             "14" = "2 years of college",
+                                             "15" = "3 years of college",
+                                             "16" = "4 years of college",
+                                             "17" = "5+ years of college") %>%
+  as.numeric()
+
+# Calculate the difference in education levels
+acs2021_couples$educ_diff <- acs2021_couples$educ_numeric - acs2021_couples$h_educ_numeric
+
+# Filter for working-age population (ages 25-55) who are in the labor force
+acs_subgroup <- acs2021_couples %>%
+  filter(AGE >= 25 & AGE <= 55 & LABFORCE == 2 & WKSWORK2 > 4 & UHRSWORK >= 35)
+
+# Summary of income differences in the filtered subgroup
+summary(acs_subgroup$income_diff[acs_subgroup$SEX == "Female"])
+summary(acs_subgroup$income_diff[acs_subgroup$SEX == "Male"])
+
+# Visualization of income and education differences by sex
+ggplot(acs_subgroup, aes(x = SEX, y = income_diff)) +
+  geom_boxplot() +
+  labs(title = "Income Difference by Sex (Filtered Subgroup)", x = "Sex", y = "Income Difference")
+
+ggplot(acs_subgroup, aes(x = SEX, y = educ_diff)) +
+  geom_boxplot() +
+  labs(title = "Education Difference by Sex (Filtered Subgroup)", x = "Sex", y = "Education Difference")
